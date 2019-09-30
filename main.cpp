@@ -19,21 +19,10 @@ void glPaint(void) {
 	glLoadIdentity();
 	glRotatef(rotarx,1.0,0.0,0.0);
 	glRotatef(rotary,0.0,1.0,0.0);
-	//glOrtho(-20.0f,  20.0f,-20.0f, 20.0f, -20.0f, 20.0f);
+	glOrtho(-10.0f,  10.0f,-10.0f, 10.0f, -10.0f, 10.0f);
     //glFrustum(-20,20,-20,20,5,9);
 	//dibujar quadTree (qt->draw())
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(-0.5,-0.5,-0.5);
-    glVertex3f(-0.5,0.5,-0.5);
-    glVertex3f(0.5,0.5,-0.5);
-    glVertex3f(0.5,-0.5,-0.5);
-    glEnd();
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(-0.5,-0.5,0.5);
-    glVertex3f(-0.5,0.5,0.5);
-    glVertex3f(0.5,0.5,0.5);
-    glVertex3f(0.5,-0.5,0.5);
-    glEnd();
+    mesh->drawEdges();
 	//dibuja el gizmo
 	//displayGizmo();
     glFlush();
