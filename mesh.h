@@ -2,6 +2,8 @@
 #define MESH_H_INCLUDED
 #include <map>
 #include <string>
+#include <math.h>
+#define PI 3.1415926535897
 
 using namespace std;
 template<class G>
@@ -15,6 +17,27 @@ struct Vertex
    Edge* edge;
 };
 
+template <class G>
+int cuadrante(const Vertex<G> &v) {
+	if (v.x >= 0 && v.y >= 0)
+		return 1;
+	if (v.x < 0 && v.y >= 0)
+		return 2;
+	if (v.x < 0 && v.y < 0)
+		return 3;
+	if (v.x >= 0 && v.y < 0)
+		return 4;
+}
+
+template<class G>
+bool operator <(const Vertex<G> &v1, const Vertex<G> &v2) {
+    if(cuadrante(v1)<cuadrante(v2))
+        return 1;
+    if(cuadrante(v1)>cuadrante(v2))
+        return 0;
+    return (atan(v1.y/v1.x)*180.0/PI < atan(v2.y/v2.x)*180.0/PI);
+}
+
 template<class G>
 class Edge
 {
@@ -22,6 +45,7 @@ class Edge
     typedef typename G::F Face;
     typedef typename G::E E;
     typedef typename G::V Vertex;
+    Edge(){twin=NULL;};
     int id;
     Face * face;
     E * twin;
@@ -51,9 +75,12 @@ class Mesh
 
     map<int,V* > puntos;
     map<int,E* > aristas;
+    map<int,F* > caras;
     void loadObject(string);
     void getPoints();
     void drawEdges();
+    void searchTween(V*,E*);
+    void vertFace();
 };
 
 #endif // MESH_H_INCLUDED

@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1569883133 source:d:\codeblocks\edafinal2\mesh.cpp
+1572963278 source:d:\codeblocks\edafinal2\mesh.cpp
 	<windows.h>
 	"mesh.h"
 	<iostream>
@@ -9,11 +9,12 @@
 	<fstream>
 	<GL/glut.h>
 
-1569883126 d:\codeblocks\edafinal2\mesh.h
+1572359752 d:\codeblocks\edafinal2\mesh.h
 	<map>
 	<string>
+	<math.h>
 
-1569882725 source:d:\codeblocks\edafinal2\main.cpp
+1572963498 source:d:\codeblocks\edafinal2\main.cpp
 	<windows.h>
 	<GL/glut.h>
 	"mesh.h"

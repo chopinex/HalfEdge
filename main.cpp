@@ -6,6 +6,7 @@
 
 Mesh* mesh;
 float rotarx=0, rotary=0;
+float w=5.0;
 
 void idle(){ // AGREGAR ESTA FUNCION
 	glutPostRedisplay();
@@ -19,7 +20,8 @@ void glPaint(void) {
 	glLoadIdentity();
 	glRotatef(rotarx,1.0,0.0,0.0);
 	glRotatef(rotary,0.0,1.0,0.0);
-	glOrtho(-10.0f,  10.0f,-10.0f, 10.0f, -10.0f, 10.0f);
+	glOrtho(-w,  w,-w, w, -w, w);
+	//gluPerspective(65, 1, 1, 20);
     //glFrustum(-20,20,-20,20,5,9);
 	//dibujar quadTree (qt->draw())
     mesh->drawEdges();
@@ -47,6 +49,7 @@ GLvoid window_redraw(GLsizei width, GLsizei height) {
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
 
 
 }
@@ -64,13 +67,13 @@ GLvoid window_key(unsigned char key, int x, int y) {
 void specialKeys(int key,int x,int y){
     switch(key){
         case GLUT_KEY_RIGHT:
-            rotary+=10;break;
+            rotary+=5;break;
         case GLUT_KEY_LEFT:
-            rotary-=10;break;
+            rotary-=5;break;
         case GLUT_KEY_UP:
-            rotarx+=10;break;
+            rotarx+=5;break;
         case GLUT_KEY_DOWN:
-            rotarx-=10;break;
+            rotarx-=5;break;
     }
 }
 
@@ -81,7 +84,7 @@ int main(int argc, char** argv)
 	glutInitWindowSize(600, 600); //tamaño de la ventana
 	glutInitWindowPosition(100, 100); //posicion de la ventana
 	glutCreateWindow("Puntos"); //titulo de la ventana
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
 	init_GL(); //funcion de inicializacion de OpenGL
 
 	glutDisplayFunc(glPaint);
@@ -94,7 +97,10 @@ int main(int argc, char** argv)
 	glutIdleFunc(&idle);
 
     mesh=new Mesh;
-    mesh->loadObject("source/girafa_testes.obj");
+    //mesh->loadObject("source/girafa_testes.obj");
+    //mesh->loadObject("source/silla.obj");
+    mesh->loadObject("source/icosfera.obj");
+    //mesh->loadObject("source/cubo.obj");
     glutMainLoop(); //bucle de rendering
     return 0;
 }
