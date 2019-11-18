@@ -1,10 +1,13 @@
 #define GLUT_DISABLE_ATEXIT_HACK
 #include <windows.h>
 #include<GL/glut.h>
+#include <iostream>
 #include "mesh.h"
 #define KEY_ESC 27
 
+//g++ main.cpp mesh.cpp -o m -lglut -lGLU -lGL
 Mesh* mesh;
+Mesh* mesh_loop;
 float rotarx=0, rotary=0;
 float w=5.0;
 
@@ -44,7 +47,7 @@ void init_GL(void) {
 	glLoadIdentity();
 }
 
-//en el caso que la ventana cambie de tamaño
+//en el caso que la ventana cambie de tamaï¿½o
 GLvoid window_redraw(GLsizei width, GLsizei height) {
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
@@ -81,7 +84,7 @@ int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowSize(600, 600); //tamaño de la ventana
+	glutInitWindowSize(600, 600); //tamaï¿½o de la ventana
 	glutInitWindowPosition(100, 100); //posicion de la ventana
 	glutCreateWindow("Puntos"); //titulo de la ventana
     //glEnable(GL_DEPTH_TEST);
@@ -101,6 +104,9 @@ int main(int argc, char** argv)
     //mesh->loadObject("source/silla.obj");
     mesh->loadObject("source/icosfera.obj");
     //mesh->loadObject("source/cubo.obj");
+	mesh_loop = new Mesh;
+	mesh_loop->loopSubdivision(mesh);
+	cout << "loop: "<<mesh_loop->caras.size()<<endl;
     glutMainLoop(); //bucle de rendering
     return 0;
 }

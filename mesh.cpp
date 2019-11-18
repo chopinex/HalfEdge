@@ -54,6 +54,8 @@ void Mesh::loadObject(string nameObj){
             puntos[a]->edge=e1;
             e1->next=e2;
             e1->face=cara;
+            puntos[a]->edgeVertex.push_back(e1);
+			puntos[b]->edgeVertex.push_back(e1);
             searchTween(puntos[a],e1);
             //---------e2----------------------------
             e2->id=ide+1;
@@ -61,6 +63,8 @@ void Mesh::loadObject(string nameObj){
             e2->head=puntos[c];
             e2->next=e3;
             e2->face=cara;
+            puntos[b]->edgeVertex.push_back(e2);
+			puntos[c]->edgeVertex.push_back(e2);
             searchTween(puntos[b],e2);
             //---------e3----------------------------
             e3->id=ide+2;
@@ -68,6 +72,8 @@ void Mesh::loadObject(string nameObj){
             e3->head=puntos[a];
             e3->next=e1;
             e3->face=cara;
+            puntos[c]->edgeVertex.push_back(e3);
+			puntos[a]->edgeVertex.push_back(e3);
             searchTween(puntos[c],e3);
             aristas.insert(pair<int,E* >(ide,e1));
             aristas.insert(pair<int,E* >(ide+1,e2));
@@ -75,6 +81,7 @@ void Mesh::loadObject(string nameObj){
             ide+=3;
         }
     }
+    addVertexNeighbors();
     obj.close();
 }
 
@@ -123,3 +130,111 @@ void Mesh::searchTween(V* init, E* dir){
     }
 }
 
+void Mesh::addVertexNeighbors() {
+	for(auto point: puntos) {		
+		for (list<E* >::iterator it=point.second->edgeVertex.begin(); it!=point.second->edgeVertex.end(); it++) {
+			if( (*it)->head != point.second ) 
+				point.second->neighbors.push_back(point.second);
+		}
+	} 
+}
+
+void Mesh::loopSubdivision(Mesh* &mesh) {
+	V* odd_v = new V;
+	V* even_v = new V;
+	map<int, E*> new_edge;
+	map<int, E*> old_edge = mesh->aristas;
+	
+	this->aristas = mesh->aristas;
+
+	int n;	double sum, sx=0.0, sy=0.0, sz=0.0;
+	int idd = 1, ide = 1,idf=1, a, b, c;
+
+	//new vertex 
+	for (auto edge : old_edge) {
+		if (!edge.second->twin) {
+			odd_v->x = (1.0/2.0)*(edge.second->head->x + edge.second->next->next->head->x);
+			odd_v->y = (1.0/2.0)*(edge.second->head->y + edge.second->next->next->head->y);
+			odd_v->z = (1.0/2.0)*(edge.second->head->z + edge.second->next->next->head->z);
+		}
+		else {
+			odd_v->x = ((3.0/8.0)*(edge.second->head->x + edge.second->next->next->head->x)) + ((1.0/8.0)*(edge.second->next->head->x + edge.second->twin->next->head->x));
+			odd_v->y = ((3.0/8.0)*(edge.second->head->y + edge.second->next->next->head->y)) + ((1.0/8.0)*(edge.second->next->head->y + edge.second->twin->next->head->y));
+			odd_v->z = ((3.0/8.0)*(edge.second->head->z + edge.second->next->next->head->z)) + ((1.0/8.0)*(edge.second->next->head->z + edge.second->twin->next->head->z));
+		}
+		odd_v->id = idd;
+		edge.second->pmiddle = odd_v;
+		this->puntos.insert(pair<int, V* >(idd, edge.second->pmiddle));
+		idd++;
+	}
+
+	float BETA;
+	for (auto edge : old_edge) {
+		n = edge.second->head->neighbors.size();
+		BETA = 1.0/n + 5.0/8.0- pow(3.0/8.0 + 1.0/4.0*cos((2.0* PI)/n), 2);
+		
+		if (!edge.second->twin) {
+			even_v->x = ((1.0/8.0)*(edge.second->head->x + edge.second->next->next->head->x)) + ((3.0/4.0)*even_v->x);
+			even_v->y = ((1.0/8.0)*(edge.second->head->y + edge.second->next->next->head->y)) + ((3.0/4.0)*even_v->y);
+			even_v->z = ((1.0/8.0)*(edge.second->head->z + edge.second->next->next->head->z)) + ((3.0/4.0)*even_v->z);
+		}
+		else {
+			for(int k=0; k<n; k++) {
+				sx += BETA * edge.second->head->neighbors[k]->x;
+				sy += BETA * edge.second->head->neighbors[k]->y;
+				sz += BETA * edge.second->head->neighbors[k]->z;
+			}
+			sx=sx/n;	sy=sy/n;	sz=sz/n;
+			even_v->x = edge.second->head->x*(1-n*BETA) + sx;
+			even_v->y = edge.second->head->y*(1-n*BETA) + sy;
+			even_v->z = edge.second->head->z*(1-n*BETA) + sz;
+		}
+		// cout<<"EVEN_v 2-----> "<<even_v->x<<" "<<even_v->y<<" "<<even_v->z<<"\n";
+		even_v->id = idd;
+		edge.second->pmiddle = even_v;
+		// cout<<"even-----> "<<edge.second->pmiddle->id<<"\n";
+		this->puntos.insert(pair<int, V* >(idd, edge.second->pmiddle));
+		idd++;
+	}
+	
+	getPoints();
+	E* e1 = new E;
+	E* e2 = new E;
+	E* e3 = new E;
+	F* cara = new F;
+	cara->id = idf;
+	cara->edge = e1;
+	caras.insert(pair<int, F* >(idf, cara));
+	idf++;
+	for (auto edge : old_edge) {
+		a = edge.second->pmiddle->id;
+		b = edge.second->next->pmiddle->id;
+		c = edge.second->next->next->pmiddle->id;
+        // cout<<"-----> "<<a<<" "<<b<<" "<<c<<"\n";
+		//---------e1----------------------------
+		e1->id = ide;
+		e1->head = puntos[b];
+		puntos[a]->edge = e1;
+		e1->next = e2;
+		e1->face = cara;
+		searchTween(puntos[a], e1);
+		//---------e2----------------------------
+		e2->id = ide + 1;
+		puntos[b]->edge = e2;
+		e2->head = puntos[c];
+		e2->next = e3;
+		e2->face = cara;
+		searchTween(puntos[b], e2);
+		//---------e3----------------------------
+		e3->id = ide + 2;
+		puntos[c]->edge = e3;
+		e3->head = puntos[a];
+		e3->next = e1;
+		e3->face = cara;
+		searchTween(puntos[c], e3);
+		aristas.insert(pair<int, E* >(ide, e1));
+		aristas.insert(pair<int, E* >(ide + 1, e2));
+		aristas.insert(pair<int, E* >(ide + 2, e3));
+		ide += 3;
+	}			
+}

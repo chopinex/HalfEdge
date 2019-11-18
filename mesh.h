@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 #include <math.h>
+#include <vector>
+#include <list>
 #define PI 3.1415926535897
 
 using namespace std;
@@ -10,11 +12,14 @@ template<class G>
 struct Vertex
 {
    typedef typename G::E Edge;
+   typedef typename G::V V;
    float x;
    float y;
    float z;
    int id;
    Edge* edge;
+   vector<V* > neighbors;
+   list<Edge* > edgeVertex;
 };
 
 template <class G>
@@ -51,6 +56,7 @@ class Edge
     E * twin;
     E * next;
     Vertex * head;//tail
+    Vertex * pmiddle;//point middle
 };
 
 template<class G>
@@ -81,6 +87,9 @@ class Mesh
     void drawEdges();
     void searchTween(V*,E*);
     void vertFace();
+    void addVertexNeighbors();
+
+	void loopSubdivision(Mesh*& );
 };
 
 #endif // MESH_H_INCLUDED
