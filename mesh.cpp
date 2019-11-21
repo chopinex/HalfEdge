@@ -6,7 +6,7 @@
 #include <map>
 #include <sstream>
 #include <fstream>
-#include<GL/glut.h>
+#include"GL/glut.h"
 
 //template <class E>
 void Mesh::loadObject(string nameObj){
@@ -22,7 +22,7 @@ void Mesh::loadObject(string nameObj){
     string line;
     string method;
     V *v;
-    int idd=1,ide=1,idf=1,a,b,c;
+    int idd=1,ide=1,idf=1,idn=1,a,b,c,an,bn,cn;
     while(getline(obj, line)){
         istringstream iss(line);
         iss>>method;
@@ -34,12 +34,34 @@ void Mesh::loadObject(string nameObj){
             puntos.insert(pair<int,V* >(idd,v));
             idd++;
         }
+		if (method == "vn") {
+			float nn[3];
+			iss >> nn[0] >> nn[1] >> nn[2];
+			normales.insert(pair<int, float* >(idn, nn));
+			//cout << normales[idn][0]<<endl;
+			idn++;
+		}
         if(method=="f"){
             iss>>a;
-            iss.ignore(14,' ');
+            iss.ignore(20,'/');
+            iss.ignore(20,'/');
+            iss>>an;
+            for(int i=0;i<3;++i)
+                puntos[a]->normal[i]=normales[an][i];
+            iss.ignore(20,' ');
             iss>>b;
-            iss.ignore(14,' ');
+            iss.ignore(20,'/');
+            iss.ignore(20,'/');
+            iss>>bn;
+            for(int i=0;i<3;++i)
+                puntos[b]->normal[i]=normales[bn][i];
+            iss.ignore(20,' ');
             iss>>c;
+            iss.ignore(20,'/');
+            iss.ignore(20,'/');
+            iss>>cn;
+            for(int i=0;i<3;++i)
+                puntos[c]->normal[i]=normales[cn][i];
             E* e1=new E;
             E* e2=new E;
             E* e3=new E;
@@ -54,6 +76,8 @@ void Mesh::loadObject(string nameObj){
             puntos[a]->edge=e1;
             e1->next=e2;
             e1->face=cara;
+            puntos[a]->edgeVertex.push_back(e1);
+			puntos[b]->edgeVertex.push_back(e1);
             searchTween(puntos[a],e1);
             //---------e2----------------------------
             e2->id=ide+1;
@@ -61,6 +85,8 @@ void Mesh::loadObject(string nameObj){
             e2->head=puntos[c];
             e2->next=e3;
             e2->face=cara;
+            puntos[b]->edgeVertex.push_back(e2);
+			puntos[c]->edgeVertex.push_back(e2);
             searchTween(puntos[b],e2);
             //---------e3----------------------------
             e3->id=ide+2;
@@ -68,13 +94,18 @@ void Mesh::loadObject(string nameObj){
             e3->head=puntos[a];
             e3->next=e1;
             e3->face=cara;
+            puntos[c]->edgeVertex.push_back(e3);
+			puntos[a]->edgeVertex.push_back(e3);
             searchTween(puntos[c],e3);
+
             aristas.insert(pair<int,E* >(ide,e1));
             aristas.insert(pair<int,E* >(ide+1,e2));
             aristas.insert(pair<int,E* >(ide+2,e3));
             ide+=3;
         }
     }
+    //showTweens();
+    addVertexNeighbors();
     obj.close();
 }
 
@@ -100,8 +131,9 @@ void Mesh::drawEdges() {
 		e = (*it).second->edge;
 		v = e->head;
 		glBegin(GL_TRIANGLES);
-		glColor3f(0.5, 0.4, 0.1);
+		//glColor3f(0.5, 0.6, 0.5);
 		for (int i = 0; i < 3; ++i) {
+            glNormal3f(v->normal[0],v->normal[1],v->normal[2]);
 			glVertex3f(v->x, v->y, v->z);
 			e = e->next;
 			v = e->head;
@@ -123,3 +155,21 @@ void Mesh::searchTween(V* init, E* dir){
     }
 }
 
+void Mesh::addVertexNeighbors() {
+	for(auto point: puntos) {
+		E* e = point.second->edge;
+		do{
+           point.second->neighbors.push_back(e->head);
+           e=e->twin->next;
+		}while(e!=point.second->edge);
+		for(int i=0;i<point.second->neighbors.size();++i)
+            cout<<point.second->neighbors[i]->id<<" ";
+        cout<<endl;
+	}
+}
+
+void Mesh::showTweens(){
+    for (auto arista:aristas){
+        cout<<arista.second->id<<" "<<arista.second->twin->id<<endl;
+    }
+}

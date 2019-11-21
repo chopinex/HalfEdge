@@ -6,7 +6,7 @@
 
 Mesh* mesh;
 float rotarx=0, rotary=0;
-float w=5.0;
+float w=8.0;
 
 void idle(){ // AGREGAR ESTA FUNCION
 	glutPostRedisplay();
@@ -37,7 +37,7 @@ void glPaint(void) {
 //
 void init_GL(void) {
 	//Color del fondo de la escena
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); //(R, G, B, transparencia) en este caso un fondo negro
+	glClearColor(0.2f, 0.2f, 0.2f, 0.0f); //(R, G, B, transparencia) en este caso un fondo negro
 
 	//modo projeccion
 	glMatrixMode(GL_PROJECTION);
@@ -84,7 +84,27 @@ int main(int argc, char** argv)
 	glutInitWindowSize(600, 600); //tamaño de la ventana
 	glutInitWindowPosition(100, 100); //posicion de la ventana
 	glutCreateWindow("Puntos"); //titulo de la ventana
-    //glEnable(GL_DEPTH_TEST);
+	GLfloat light_ambient0[] = {0.2, 0.2, 0.2, 1.0};
+	GLfloat light_diffuse0[] = {0.4, 0.6, 0.4, 1.0};
+	GLfloat light_specular0[] = {1.0, 1.0, 1.0, 1.0};
+	GLfloat light_position0[] = {-0.5, 0.5, 0.0, 0.0};
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient0);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse0);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular0);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
+    GLfloat light_ambient1[] = {0.2, 0.2, 0.2, 1.0};
+	GLfloat light_diffuse1[] = {0.6, 0.6, 0.4, 1.0};
+	GLfloat light_specular1[] = {1.0, 1.0, 1.0, 0.2};
+	GLfloat light_position1[] = {0.5, -0.5, 0.0, 1.0};
+	glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient1);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse1);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular1);
+    glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
+    glEnable(GL_NORMALIZE);
 	init_GL(); //funcion de inicializacion de OpenGL
 
 	glutDisplayFunc(glPaint);
@@ -99,8 +119,10 @@ int main(int argc, char** argv)
     mesh=new Mesh;
     //mesh->loadObject("source/girafa_testes.obj");
     //mesh->loadObject("source/silla.obj");
-    mesh->loadObject("source/icosfera.obj");
-    //mesh->loadObject("source/cubo.obj");
+    //mesh->loadObject("source/FF1.obj");
+    //mesh->loadObject("source/icosfera.obj");
+    //mesh->loadObject("source/perrito2.obj");
+    mesh->loadObject("source/cubo.obj");
     glutMainLoop(); //bucle de rendering
     return 0;
 }
