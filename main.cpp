@@ -1,5 +1,5 @@
 #define GLUT_DISABLE_ATEXIT_HACK
-#include <windows.h>
+// #include <windows.h>
 #include<GL/glut.h>
 #include <iostream>
 #include "mesh.h"

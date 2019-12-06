@@ -1,5 +1,5 @@
 #define GLUT_DISABLE_ATEXIT_HACK
-#include <windows.h>
+// #include <windows.h>
 #include "mesh.h"
 #include <iostream>
 #include <list>
@@ -174,6 +174,7 @@ void Mesh::loopSubdivision(Mesh* &mesh) {
 		BETA = 1.0/n + 5.0/8.0- pow(3.0/8.0 + 1.0/4.0*cos((2.0* PI)/n), 2);
 		
 		if (!edge.second->twin) {
+            cout<<"twin\n";
 			even_v->x = ((1.0/8.0)*(edge.second->head->x + edge.second->next->next->head->x)) + ((3.0/4.0)*even_v->x);
 			even_v->y = ((1.0/8.0)*(edge.second->head->y + edge.second->next->next->head->y)) + ((3.0/4.0)*even_v->y);
 			even_v->z = ((1.0/8.0)*(edge.second->head->z + edge.second->next->next->head->z)) + ((3.0/4.0)*even_v->z);
@@ -197,7 +198,7 @@ void Mesh::loopSubdivision(Mesh* &mesh) {
 		idd++;
 	}
 	
-	getPoints();
+	// getPoints();
 	E* e1 = new E;
 	E* e2 = new E;
 	E* e3 = new E;
