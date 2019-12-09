@@ -174,8 +174,8 @@ void Mesh::loopSubdivision(Mesh* &mesh) {
 			odd_v->z = ((3.0/8.0)*(edge.second->head->z + edge.second->next->next->head->z)) + ((1.0/8.0)*(edge.second->next->head->z + edge.second->twin->next->head->z));
 			// cout<<"ODD_v 2-----> "<<odd_v->x<<" "<<odd_v->y<<" "<<odd_v->z<<"\n";
 		}
-		odd_v->id = idd;
-		edge.second->pmiddle->x = odd_v->x;	edge.second->pmiddle->y = odd_v->y;	edge.second->pmiddle->z = odd_v->z;
+		//odd_v->id = idd;
+		//edge.second->pmiddle->x = odd_v->x;	edge.second->pmiddle->y = odd_v->y;	edge.second->pmiddle->z = odd_v->z;
 		//new_vertex.insert(pair<int, V* >(idd, edge.second->pmiddle));
 		
 		//this->puntos.insert(pair<int, V* >(idd, edge.second->pmiddle));
@@ -220,8 +220,8 @@ void Mesh::loopSubdivision(Mesh* &mesh) {
 			even_v->y = v->y*(1-n*BETA) + BETA*sy;
 			even_v->z = v->z*(1-n*BETA) + BETA+sz;
 		}
-		even_v->id = idd;
-		v->x = even_v->x;	v->y = even_v->y;	v->z = even_v->z;
+		//even_v->id = idd;
+		//v->x = even_v->x;	v->y = even_v->y;	v->z = even_v->z;
 		//edge.second->pmiddle = even_v;
 		// cout<<"even-----> "<<edge.second->pmiddle->id<<"\n";
 		//new_vertex.insert(pair<int, V* >(idd, v));
@@ -274,9 +274,9 @@ void Mesh::loopSubdivision(Mesh* &mesh) {
 	for(auto face : this->caras) {
 		F* f=face.second;
 		os << "f ";
-		for (int i=0; i<3; i++) {
-			os << f->vindex[i] << " ";
-		}
+		//for (int i=0; i<3; i++) {
+		os << f->vindex[0] << " "<< f->vindex[1] << " "<<f->vindex[2]<<" ";
+		//}
 		os << std::endl;
 	}
 	os.close();

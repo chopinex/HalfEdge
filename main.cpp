@@ -27,7 +27,8 @@ void glPaint(void) {
 	//gluPerspective(65, 1, 1, 20);
     //glFrustum(-20,20,-20,20,5,9);
 	//dibujar quadTree (qt->draw())
-    mesh->drawEdges();
+    //mesh->drawEdges();
+	mesh_loop->drawEdges();
 	//dibuja el gizmo
 	//displayGizmo();
     glFlush();
@@ -104,6 +105,7 @@ int main(int argc, char** argv)
     //mesh->loadObject("source/silla.obj");
     mesh->loadObject("source/icosfera.obj");
     //mesh->loadObject("source/cubo.obj");
+	cout << mesh->caras.size()<<endl;
 	mesh_loop = new Mesh;
 	mesh_loop->loopSubdivision(mesh);
 	cout << "loop: "<<mesh_loop->caras.size()<<endl;
