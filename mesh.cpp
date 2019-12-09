@@ -204,7 +204,7 @@ void Mesh::showTweens(){
 
 void Mesh::showCaras(){
     for (map<int, F* >::iterator it = caras.begin(); it != caras.end(); it++)
-        cout<<"cara "<<(*it).first<<": "<<(*it).second->edge->id<<"/"<<(*it).second->edge->next->id<<"/"<<(*it).second->edge->next->next->id<<endl;
+        cout<<"cara "<<(*it).first<<": "<<(*it).second->edge->head->id<<"/"<<(*it).second->edge->next->head->id<<"/"<<(*it).second->edge->next->next->head->id<<endl;
 }
 
 void Mesh::calculateNormals(){
@@ -274,8 +274,8 @@ void Mesh::loopSubdivision(Mesh* &mesh) {
 
 	//this->aristas = mesh->aristas;
 
-	int n;	double sum, sx=0.0, sy=0.0, sz=0.0;
-	int idd = 1, ide = 1,idf=1, a, b, c;
+	int n;	double sx=0.0, sy=0.0, sz=0.0;
+	int idd = 1, ide = 1,idf=1;
 
 	//new vertex
 	for (auto edge : old_edge) {
@@ -336,7 +336,6 @@ void Mesh::loopSubdivision(Mesh* &mesh) {
 	F* ncara;
 	for (auto cara : mesh->caras){
         e=cara.second->edge;
-        cout<<cara.second->id<<" "<<e->head->id<<endl;
         do{
             ncara=new F;
             e1=new E;
@@ -402,4 +401,6 @@ void Mesh::loopSubdivision(Mesh* &mesh) {
         aristas.insert(pair<int, E* >(ide+2,e3));
         ide+=3;
 	}
+	addVertexNeighbors();
+    calculateNormals();
 }

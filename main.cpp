@@ -95,7 +95,7 @@ void specialKeys(int key,int x,int y){
         case GLUT_KEY_PAGE_DOWN:
             mesh_loop = new Mesh;
             mesh_loop->loopSubdivision(mesh);
-            //mesh_loop->showCaras();
+            mesh_loop->showCaras();
             delete mesh;
     }
 }
@@ -141,15 +141,14 @@ int main(int argc, char** argv)
 	glutIdleFunc(&idle);
 
     mesh=new Mesh;
-    //mesh->loadObject("source/girafa_testes.obj");
+    mesh->loadObject("source/girafa_testes.obj");
     //mesh->loadObject("source/silla.obj");
     //mesh->loadObject("source/FF1.obj");
-    mesh->loadObject("source/icosfera.obj");
+    //mesh->loadObject("source/icosfera.obj");
     //mesh->loadObject("source/perrito.obj");
     //mesh->loadObject("source/aranya.obj");
     //mesh->loadObject("source/cubo.obj");
     cout<<mesh->caras.size()<<endl;
-    mesh->showCaras();
     glutMainLoop(); //bucle de rendering
     return 0;
 }
