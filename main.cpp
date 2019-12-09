@@ -1,10 +1,13 @@
 #define GLUT_DISABLE_ATEXIT_HACK
 #include <windows.h>
 #include<GL/glut.h>
+#include <iostream>
 #include "mesh.h"
 #define KEY_ESC 27
 
+using namespace std;
 Mesh* mesh;
+Mesh* mesh_loop;
 float rotarx=0, rotary=0;
 float w=8.0;
 
@@ -64,6 +67,21 @@ GLvoid window_key(unsigned char key, int x, int y) {
 		break;
 	}
 }
+void OnMouseClick(int button, int state, int x, int y){
+    if(state==GLUT_DOWN){
+        switch (button){
+        case GLUT_RIGHT_BUTTON:
+            w+=0.1;break;
+        case GLUT_LEFT_BUTTON: // It's a wheel event
+            w-=0.1;break;
+        /*case GLUT_WHEEL_UP:
+            w+=0.1;break;
+        case GLUT_WHEEL_DOWN: // It's a wheel event
+            w-=0.1;break;*/
+        }
+    }
+}
+
 void specialKeys(int key,int x,int y){
     switch(key){
         case GLUT_KEY_RIGHT:
@@ -74,6 +92,11 @@ void specialKeys(int key,int x,int y){
             rotarx+=5;break;
         case GLUT_KEY_DOWN:
             rotarx-=5;break;
+        case GLUT_KEY_PAGE_DOWN:
+            mesh_loop = new Mesh;
+            mesh_loop->loopSubdivision(mesh);
+            //mesh_loop->showCaras();
+            delete mesh;
     }
 }
 
@@ -84,18 +107,18 @@ int main(int argc, char** argv)
 	glutInitWindowSize(600, 600); //tamaño de la ventana
 	glutInitWindowPosition(100, 100); //posicion de la ventana
 	glutCreateWindow("Puntos"); //titulo de la ventana
-	GLfloat light_ambient0[] = {0.2, 0.2, 0.2, 1.0};
-	GLfloat light_diffuse0[] = {0.4, 0.6, 0.4, 1.0};
+	GLfloat light_ambient0[] = {0.2, 0.2, 0.2, 0.5};
+	GLfloat light_diffuse0[] = {0.4, 0.4, 0.4, 1.0};
 	GLfloat light_specular0[] = {1.0, 1.0, 1.0, 1.0};
-	GLfloat light_position0[] = {-0.5, 0.5, 0.0, 0.0};
+	GLfloat light_position0[] = {0.0, 5.0, -5.0, 0.0};
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient0);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse0);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular0);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
-    GLfloat light_ambient1[] = {0.2, 0.2, 0.2, 1.0};
-	GLfloat light_diffuse1[] = {0.6, 0.6, 0.4, 1.0};
-	GLfloat light_specular1[] = {1.0, 1.0, 1.0, 0.2};
-	GLfloat light_position1[] = {0.5, -0.5, 0.0, 1.0};
+    GLfloat light_ambient1[] = {1.0, 1.0, 1.0, 0.5};
+	GLfloat light_diffuse1[] = {0.4, 0.4, 0.4, 1.0};
+	GLfloat light_specular1[] = {1.0, 0.0, 0.0, 0.2};
+	GLfloat light_position1[] = {0.0, -5.0, 5.0, 0.0};
 	glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient1);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse1);
     glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular1);
@@ -111,7 +134,8 @@ int main(int argc, char** argv)
 	glutReshapeFunc(&window_redraw);
 	// Callback del teclado
 	//glutKeyboardFunc(&window_key);
-	//glutMouseFunc(&OnMouseClick);
+	glutMouseFunc(&OnMouseClick);
+	//glutMouseWheelFunc(&RuedaRaton);
 	//glutMotionFunc(&OnMouseMotion);
 	glutSpecialFunc(&specialKeys);
 	glutIdleFunc(&idle);
@@ -120,9 +144,12 @@ int main(int argc, char** argv)
     //mesh->loadObject("source/girafa_testes.obj");
     //mesh->loadObject("source/silla.obj");
     //mesh->loadObject("source/FF1.obj");
-    //mesh->loadObject("source/icosfera.obj");
-    //mesh->loadObject("source/perrito2.obj");
-    mesh->loadObject("source/cubo.obj");
+    mesh->loadObject("source/icosfera.obj");
+    //mesh->loadObject("source/perrito.obj");
+    //mesh->loadObject("source/aranya.obj");
+    //mesh->loadObject("source/cubo.obj");
+    cout<<mesh->caras.size()<<endl;
+    mesh->showCaras();
     glutMainLoop(); //bucle de rendering
     return 0;
 }

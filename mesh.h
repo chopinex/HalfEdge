@@ -37,7 +37,7 @@ class Edge
     E * twin;
     E * next;
     Vertex * head;//tail
-    Vertex * middle;
+    Vertex * pmiddle;
 };
 
 template<class G>
@@ -68,8 +68,11 @@ class Mesh
     void searchTween(V*,E*);
     void vertFace();
     void addVertexNeighbors();
-    //	void loopSubdivision(Mesh*& );
+    void loopSubdivision(Mesh*& );
     void showTweens();
+    void showCaras();
+    void calculateNormals();
+    void edgeCollapse(float,float);
 };
 
 #endif // MESH_H_INCLUDED

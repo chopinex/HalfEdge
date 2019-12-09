@@ -6,6 +6,7 @@
 #include <map>
 #include <sstream>
 #include <fstream>
+#include <math.h>
 #include"GL/glut.h"
 
 //template <class E>
@@ -106,6 +107,7 @@ void Mesh::loadObject(string nameObj){
     }
     //showTweens();
     addVertexNeighbors();
+    calculateNormals();
     obj.close();
 }
 
@@ -156,20 +158,248 @@ void Mesh::searchTween(V* init, E* dir){
 }
 
 void Mesh::addVertexNeighbors() {
+    bool otro;
 	for(auto point: puntos) {
+        otro=false;
 		E* e = point.second->edge;
+		//cout<<point.second->id<<endl;
 		do{
+           //cout<<point.second->edge->id<<" first "<<e->id<<endl;
            point.second->neighbors.push_back(e->head);
-           e=e->twin->next;
+           if(e->twin)
+                e=e->twin->next;
+           else{
+                e=point.second->edge;
+                otro=true;
+           }
 		}while(e!=point.second->edge);
-		for(int i=0;i<point.second->neighbors.size();++i)
-            cout<<point.second->neighbors[i]->id<<" ";
-        cout<<endl;
+		//cout<<otro<<"----------------------------------------------------------"<<endl;
+		if(otro){
+            e = point.second->edge->next;
+            do{
+                //cout<<"second "<<e->id<<endl;
+                point.second->neighbors.push_back(e->head);
+                if(e->next->twin)
+                    e=e->next->twin->next;
+            }while(e->next->twin);
+		}
 	}
 }
 
 void Mesh::showTweens(){
+    ofstream myfile;
+    myfile.open ("tweens.txt");
     for (auto arista:aristas){
-        cout<<arista.second->id<<" "<<arista.second->twin->id<<endl;
+        if(arista.second->twin){
+            cout<<arista.second->id<<" "<<arista.second->twin->id<<endl;
+            myfile<<arista.second->id<<" "<<arista.second->twin->id<<endl;
+        }
+        else{
+            cout<<arista.second->id<<" NULL"<<endl;
+            myfile<<arista.second->id<<" NULL"<<endl;
+        }
     }
+    myfile.close();
+}
+
+void Mesh::showCaras(){
+    for (map<int, F* >::iterator it = caras.begin(); it != caras.end(); it++)
+        cout<<"cara "<<(*it).first<<": "<<(*it).second->edge->id<<"/"<<(*it).second->edge->next->id<<"/"<<(*it).second->edge->next->next->id<<endl;
+}
+
+void Mesh::calculateNormals(){
+    for(auto point: puntos){
+        float sx=0,sy=0,sz=0;
+        for(unsigned int i=0;i<point.second->neighbors.size();++i){
+            sx+=point.second->neighbors[i]->x;
+            sy+=point.second->neighbors[i]->y;
+            sz+=point.second->neighbors[i]->z;
+        }
+        point.second->normal[0]=sx/point.second->neighbors.size();
+        point.second->normal[1]=sy/point.second->neighbors.size();
+        point.second->normal[2]=sz/point.second->neighbors.size();
+    }
+}
+
+void Mesh::edgeCollapse(float umbralD, float umbralA){
+    list<E*> cercanos;
+    V* uno;
+    V* dos;
+    for(auto arista:aristas){
+        uno=arista.second->head;
+        dos=arista.second->next->next->head;
+        if(sqrt((dos->x-uno->x)*(dos->x-uno->x)+(dos->y-uno->y)*(dos->y-uno->y)+(dos->z-uno->z)*(dos->z-uno->z))<umbralD)
+            cercanos.push_back(arista.second);
+    }
+    V* cola;
+    float xv,yv,zv,xv1,yv1,zv1,xv2,yv2,zv2,alfa1,alfa2;
+    for(auto cerca:cercanos){
+        for(int i=0;i<cerca->head->neighbors.size();++i){
+            xv1+=cerca->head->neighbors[i]->x;
+            yv1+=cerca->head->neighbors[i]->y;
+            zv1+=cerca->head->neighbors[i]->z;
+        }
+        xv1=xv1/cerca->head->neighbors.size()-cerca->head->x;
+        yv1=yv1/cerca->head->neighbors.size()-cerca->head->y;
+        zv1=zv1/cerca->head->neighbors.size()-cerca->head->z;
+        cola=cerca->next->next->head;
+        for(int i=0;i<cola->neighbors.size();++i){
+            xv2+=cola->neighbors[i]->x;
+            yv2+=cola->neighbors[i]->y;
+            zv2+=cola->neighbors[i]->z;
+        }
+        xv2=xv2/cola->neighbors.size()-cola->x;
+        yv2=yv2/cola->neighbors.size()-cola->y;
+        zv2=zv2/cola->neighbors.size()-cola->z;
+        xv=cerca->head->x-cola->x;
+        yv=cerca->head->y-cola->y;
+        zv=cerca->head->z-cola->z;
+        alfa1=acos((xv1*xv+yv1*yv+zv1*zv)/(sqrt(xv1*xv1+yv1*yv1+zv1*zv1)*sqrt(xv*xv+yv*yv+zv*zv)));
+        alfa2=acos((xv2*xv+yv2*yv+zv2*zv)/(sqrt(xv2*xv2+yv2*yv2+zv2*zv2)*sqrt(xv*xv+yv*yv+zv*zv)));
+        if(alfa1<umbralA&&alfa2<umbralA){
+            for(int i=0;i<cola->neighbors.size();++i){
+                if(cola->neighbors[i]!=cerca->head){
+
+                }
+            }
+        }
+    }
+}
+
+void Mesh::loopSubdivision(Mesh* &mesh) {
+	V* odd_v;
+	V* even_v;
+	//map<int, E*> new_edge;
+	map<int, E*> old_edge = mesh->aristas;
+
+	//this->aristas = mesh->aristas;
+
+	int n;	double sum, sx=0.0, sy=0.0, sz=0.0;
+	int idd = 1, ide = 1,idf=1, a, b, c;
+
+	//new vertex
+	for (auto edge : old_edge) {
+        odd_v=new V;
+		if (!edge.second->twin) {
+			odd_v->x = (1.0/2.0)*(edge.second->head->x + edge.second->next->next->head->x);
+			odd_v->y = (1.0/2.0)*(edge.second->head->y + edge.second->next->next->head->y);
+			odd_v->z = (1.0/2.0)*(edge.second->head->z + edge.second->next->next->head->z);
+		}
+		else {
+			odd_v->x = ((3.0/8.0)*(edge.second->head->x + edge.second->next->next->head->x)) + ((1.0/8.0)*(edge.second->next->head->x + edge.second->twin->next->head->x));
+			odd_v->y = ((3.0/8.0)*(edge.second->head->y + edge.second->next->next->head->y)) + ((1.0/8.0)*(edge.second->next->head->y + edge.second->twin->next->head->y));
+			odd_v->z = ((3.0/8.0)*(edge.second->head->z + edge.second->next->next->head->z)) + ((1.0/8.0)*(edge.second->next->head->z + edge.second->twin->next->head->z));
+		}
+		odd_v->id = idd;
+		edge.second->pmiddle = odd_v;
+		this->puntos.insert(pair<int, V* >(idd, edge.second->pmiddle));
+		idd++;
+	}
+
+	float BETA;
+	for (auto edge : old_edge) {
+        even_v=new V;
+		n = edge.second->head->neighbors.size();
+		BETA = 1.0/n + 5.0/8.0- pow(3.0/8.0 + 1.0/4.0*cos((2.0* PI)/n), 2);
+
+		if (!edge.second->twin) {
+            //cout<<"twin\n";
+			even_v->x = ((1.0/8.0)*(edge.second->head->x + edge.second->next->next->head->x)) + ((3.0/4.0)*even_v->x);
+			even_v->y = ((1.0/8.0)*(edge.second->head->y + edge.second->next->next->head->y)) + ((3.0/4.0)*even_v->y);
+			even_v->z = ((1.0/8.0)*(edge.second->head->z + edge.second->next->next->head->z)) + ((3.0/4.0)*even_v->z);
+		}
+		else {
+			for(int k=0; k<n; k++) {
+				sx += BETA * edge.second->head->neighbors[k]->x;
+				sy += BETA * edge.second->head->neighbors[k]->y;
+				sz += BETA * edge.second->head->neighbors[k]->z;
+			}
+			sx=sx/n;	sy=sy/n;	sz=sz/n;
+			even_v->x = edge.second->head->x*(1-n*BETA) + sx;
+			even_v->y = edge.second->head->y*(1-n*BETA) + sy;
+			even_v->z = edge.second->head->z*(1-n*BETA) + sz;
+		}
+		// cout<<"EVEN_v 2-----> "<<even_v->x<<" "<<even_v->y<<" "<<even_v->z<<"\n";
+		even_v->id = idd;
+		//edge.second->pmiddle = even_v;
+		edge.second->head = even_v;
+		// cout<<"even-----> "<<edge.second->pmiddle->id<<"\n";
+		this->puntos.insert(pair<int, V* >(idd, edge.second->head));
+		idd++;
+	}
+
+	// getPoints();
+	E* e;
+	E* e1;
+	E* e2;
+	E* e3;
+	F* ncara;
+	for (auto cara : mesh->caras){
+        e=cara.second->edge;
+        cout<<cara.second->id<<" "<<e->head->id<<endl;
+        do{
+            ncara=new F;
+            e1=new E;
+            e2=new E;
+            e3=new E;
+            e1->id=ide;
+            e2->id=ide+1;
+            e3->id=ide+2;
+            e1->head=e->head;
+            e2->head=e->next->pmiddle;
+            e3->head=e->pmiddle;
+            e1->next=e2;
+            e2->next=e3;
+            e3->next=e1;
+            ncara->id = idf;
+            ncara->edge = e1;
+            caras.insert(pair<int, F* >(idf, ncara));
+            idf++;
+            e1->face=ncara;
+            e2->face=ncara;
+            e2->face=ncara;
+            e1->head->edge=e2;
+            e2->head->edge=e3;
+            e3->head->edge=e1;
+            searchTween(e1->head,e2);
+            searchTween(e2->head,e3);
+            searchTween(e3->head,e1);
+            aristas.insert(pair<int, E* >(ide,e1));
+            aristas.insert(pair<int, E* >(ide+1,e2));
+            aristas.insert(pair<int, E* >(ide+2,e3));
+            ide+=3;
+            e=e->next;
+        }while(e!=cara.second->edge);
+        //cara interna
+        e1=new E;
+        e2=new E;
+        e3=new E;
+        ncara=new F;
+        e1->id=ide;
+        e2->id=ide+1;
+        e3->id=ide+2;
+        e1->head=e->pmiddle;
+        e2->head=e->next->pmiddle;
+        e3->head=e->next->next->pmiddle;
+        e1->next=e2;
+        e2->next=e3;
+        e3->next=e1;
+        ncara->id = idf;
+        ncara->edge = e1;
+        caras.insert(pair<int, F* >(idf, ncara));
+        idf++;
+        e1->face=ncara;
+        e2->face=ncara;
+        e2->face=ncara;
+        e1->head->edge=e2;
+        e2->head->edge=e3;
+        e3->head->edge=e1;
+        searchTween(e1->head,e2);
+        searchTween(e2->head,e3);
+        searchTween(e3->head,e1);
+        aristas.insert(pair<int, E* >(ide,e1));
+        aristas.insert(pair<int, E* >(ide+1,e2));
+        aristas.insert(pair<int, E* >(ide+2,e3));
+        ide+=3;
+	}
 }
