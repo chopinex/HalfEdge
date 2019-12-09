@@ -20,6 +20,8 @@ struct Vertex
    Edge* edge;
    vector<V* > neighbors;
    list<Edge* > edgeVertex;
+
+   bool boundary;
 };
 
 template <class G>
@@ -66,6 +68,7 @@ class Face
     typedef typename G::E Edge;
     int id;
     Edge *edge;
+    int *vindex[3]; //vertex index
 };
 
 class Mesh
@@ -82,11 +85,13 @@ class Mesh
     map<int,V* > puntos;
     map<int,E* > aristas;
     map<int,F* > caras;
+    string nameOBj;
     void loadObject(string);
     void getPoints();
     void drawEdges();
     void searchTween(V*,E*);
     void vertFace();
+    void label_boundary();
     void addVertexNeighbors();
 
 	void loopSubdivision(Mesh*& );
